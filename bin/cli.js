@@ -1,9 +1,81 @@
 #!/usr/bin/env node
 
-let bullhorn     = require('../lib/bullhorn');
-let bullhornAuth = require('../lib/bullhornAuth');
+const bullhorn = require('../lib/bullhorn');
+const auth = require('../lib/bullhornAuth');
+const dotenv = require('dotenv').config();
+const cliOptions = require("yargs");
 
-const yargs = require("yargs");
+cliOptions.usage("Usage: -c <command> -p <payload> -r <rest-token>")
+    .option("c", {
+        alias: "command",
+        describe: "Slack command",
+        type: "string",
+        demandOption: true
+    })
+    .option("n", {
+        alias: "name",
+        describe: "Candidate name",
+        type: "string",
+        demandOption: false
+    })
+    .option("s", {
+        alias: "skills",
+        describe: "Candidate skills",
+        type: "string",
+        demandOption: false
+    })
+    .option("r", {
+        alias: "resttoken",
+        describe: "Bullhorn rest token",
+        type: "string",
+        demandOption: false
+    })
+    .argv;
+
+const getCandidatePayload = () => {
+    let payload = {
+        name: cliOptions.name,
+        skills: cliOptions.skills ? cliOptions.skills.split(/\s+/) : null
+    };
+    return payload;
+};
+
+(async () => {
+    try {
+        process.env.BHRESTTOKEN = cliOptions.resttoken;
+        console.log(`Proceeding with rest token: ${process.env.BHRESTTOKEN}`);
+
+        const commands = {
+            "/token": async () => {
+                const [username, password] = [process.env.BHAPIUSERNAME, process.env.BHPASSWORD];
+                const response = await auth.authenticate(username, password);
+                console.log(`BhRestToken is ${response.BhRestToken}`);
+            },
+
+            "/candidate": async (restToken) => {
+                const payload = getCandidatePayload();
+                const response = await bullhorn.searchCandidate(payload, restToken);
+                const noCandidateMsg = "No candidate found related to the given search term(s)";
+
+                if (response.data.length) {
+                    response.data.forEach(({ firstName, lastName, primarySkills: { data } }) => {
+                        console.log(`Candidate: ${firstName} ${lastName}`);
+                        console.log(data.map(({ name }) => name));
+                    });
+                }
+                else {
+                    console.log(noCandidateMsg);
+                }
+            },
+        };
+
+        commands[cliOptions.command](process.env.BHRESTTOKEN);
+
+    } catch (err) {
+        console.log(`An error occurred: ${err.message}`);
+    }
+})();
+rgs = require("yargs");
 
 const options = yargs
  .usage("Usage: -c <command> -p <payload> -r <rest-token>")
