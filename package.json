@@ -1,0 +1,41 @@
+{
+  "name": "proof-bot",
+  "version": "1.0.0",
+  "description": "Proof slack bot",
+  "main": "index.js",
+  "scripts": {
+    "start": "node ./bin/index.js",
+    "watch": "DEV=proof:* supervisor ./bin/index.js",
+    "test": "npx mocha --reporter spec",
+    "build": "gcloud builds submit --tag gcr.io/proof-intranet/slack-bot",
+    "deploy": "gcloud run deploy proof-bot --image=gcr.io/proof-intranet/slack-bot --region=us-central1 --platform=managed",
+    "cli": "node ./bin/cli.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/weareproof/proof-bot.git"
+  },
+  "keywords": [
+    "proof",
+    "slack",
+    "bot",
+    "bullhorn"
+  ],
+  "author": "David Kullmann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/weareproof/proof-bot/issues"
+  },
+  "homepage": "https://github.com/weareproof/proof-bot#readme",
+  "dependencies": {
+    "chai": "^4.3.4",
+    "express": "^4.17.1",
+    "express-session": "^1.17.2",
+    "mocha": "^8.4.0",
+    "request": "^2.88.2",
+    "request-promise": "^4.2.6",
+    "session-file-store": "^1.5.0",
+    "supervisor": "^0.12.0",
+    "yargs": "^16.2.0"
+  }
+}
